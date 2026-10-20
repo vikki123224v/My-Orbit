@@ -84,3 +84,8 @@
   background: rgba(17, 24, 39, 0.95) !important;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+/* Beautiful, 100% free dark theme for standard OpenStreetMap tiles with zero API keys */
+.map-tiles-dark {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+}

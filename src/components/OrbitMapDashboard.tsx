@@ -229,12 +229,12 @@ export const OrbitMapDashboard: React.FC = () => {
         >
           <MapViewController center={mapCenter} zoom={mapZoom} />
 
-          {/* CartoDB Dark Matter OpenStreetMap Tiles */}
+          {/* 100% Free OpenStreetMap Tiles styled with sleek dark theme */}
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
             maxZoom={19}
-            subdomains="abcd"
+            className="map-tiles-dark"
           />
 
           {/* User Self Marker & Range Circles */}
