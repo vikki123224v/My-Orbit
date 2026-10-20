@@ -43,18 +43,33 @@ function MapViewController({
 }
 
 // Map tile configs
-const DARK_TILE = {
-  url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+// Uses OpenStreetMap tiles (100% free, no API key required, reliable worldwide)
+// In dark mode, .map-tiles-dark CSS filter transforms tiles into a sleek dark theme
+const OSM_TILE = {
+  url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
   attribution:
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-  maxZoom: 20,
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom: 19,
 }
 
-const LIGHT_TILE = {
-  url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+// Fallback CARTO tiles if user configures VITE_CARTO_API_KEY in .env
+const cartoKey = import.meta.env.VITE_CARTO_API_KEY
+const CARTO_DARK_TILE = {
+  url: cartoKey
+    ? `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${cartoKey}`
+    : OSM_TILE.url,
   attribution:
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-  maxZoom: 20,
+  maxZoom: 19,
+}
+
+const CARTO_LIGHT_TILE = {
+  url: cartoKey
+    ? `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=${cartoKey}`
+    : OSM_TILE.url,
+  attribution:
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  maxZoom: 19,
 }
 
 export const OrbitMapDashboard: React.FC = () => {
@@ -119,7 +134,9 @@ export const OrbitMapDashboard: React.FC = () => {
     }
   }
 
-  const tile = isDark ? DARK_TILE : LIGHT_TILE
+  // If CARTO key is provided, use CARTO tiles. Otherwise, use OSM with dark filter in dark mode.
+  const tile = cartoKey ? (isDark ? CARTO_DARK_TILE : CARTO_LIGHT_TILE) : OSM_TILE
+  const tileClassName = !cartoKey && isDark ? 'map-tiles-dark' : undefined
 
   return (
     <div className="relative w-full h-[calc(100vh-4rem)] md:h-screen flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)' }}>
@@ -203,15 +220,13 @@ export const OrbitMapDashboard: React.FC = () => {
             type="button"
             role="switch"
             aria-checked={tracker.isTracking}
-            className={`w-12 h-6 rounded-full transition-all p-0.5 relative shrink-0 toggle-track ${
+            className={`w-11 h-6 rounded-full transition-colors p-0.5 relative shrink-0 toggle-track ${
               tracker.isTracking ? 'bg-emerald-500' : 'bg-gray-600'
             }`}
           >
             <div
-              className={`w-5 h-5 rounded-full bg-white toggle-thumb shadow-md ${
-                tracker.isTracking ? 'translate-x-6' : 'translate-x-0'
-              }`}
-              style={{ transform: tracker.isTracking ? 'translateX(24px)' : 'translateX(0)' }}
+              className="w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-200"
+              style={{ transform: tracker.isTracking ? 'translateX(20px)' : 'translateX(0)' }}
             />
           </button>
         </div>
@@ -276,12 +291,13 @@ export const OrbitMapDashboard: React.FC = () => {
         >
           <MapViewController center={mapCenter} zoom={mapZoom} />
 
-          {/* CARTO map tiles — no API key needed, beautiful dark/light styles */}
+          {/* Interactive Map Tiles — OpenStreetMap default (free, no API key required) */}
           <TileLayer
             attribution={tile.attribution}
             url={tile.url}
             maxZoom={tile.maxZoom}
-            subdomains="abcd"
+            className={tileClassName}
+            subdomains={cartoKey ? 'abcd' : 'abc'}
           />
 
           {/* Self Marker & Range Circles */}
