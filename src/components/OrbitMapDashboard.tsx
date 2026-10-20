@@ -134,17 +134,22 @@ export const OrbitMapDashboard: React.FC = () => {
     }
   }
 
+  const [isControlsOpen, setIsControlsOpen] = useState(false)
+
   // If CARTO key is provided, use CARTO tiles. Otherwise, use OSM with dark filter in dark mode.
   const tile = cartoKey ? (isDark ? CARTO_DARK_TILE : CARTO_LIGHT_TILE) : OSM_TILE
   const tileClassName = !cartoKey && isDark ? 'map-tiles-dark' : undefined
 
   return (
-    <div className="relative w-full h-[calc(100vh-4rem)] md:h-screen flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)' }}>
+    <div
+      className="relative w-full h-[calc(100dvh-7.5rem)] md:h-screen flex flex-col overflow-hidden"
+      style={{ backgroundColor: 'var(--bg-primary)' }}
+    >
       {/* Top Floating Control Bar */}
-      <div className="absolute top-4 left-4 right-4 z-[1000] flex flex-col sm:flex-row gap-3 pointer-events-none">
+      <div className="absolute top-3 left-3 right-3 sm:top-4 sm:left-4 sm:right-4 z-[1000] flex gap-2 pointer-events-none safe-left safe-right">
         {/* Search Bar */}
         <div className="pointer-events-auto flex-1 max-w-md glass-panel rounded-2xl p-1.5 flex items-center gap-2 shadow-2xl">
-          <div className="pl-3" style={{ color: 'var(--text-muted)' }}>
+          <div className="pl-2.5" style={{ color: 'var(--text-muted)' }}>
             <Search className="w-4 h-4" />
           </div>
           <input
@@ -158,7 +163,7 @@ export const OrbitMapDashboard: React.FC = () => {
           {searchFriendText && (
             <button
               onClick={() => setSearchFriendText('')}
-              className="pr-3 text-xs hover:text-white transition"
+              className="pr-2.5 text-xs hover:text-white transition"
               style={{ color: 'var(--text-muted)' }}
             >
               Clear
@@ -167,12 +172,23 @@ export const OrbitMapDashboard: React.FC = () => {
         </div>
 
         {/* Quick Action Buttons */}
-        <div className="pointer-events-auto flex items-center gap-2 self-start sm:self-auto">
+        <div className="pointer-events-auto flex items-center gap-1.5 shrink-0">
+          {/* Mobile toggle for filter/radar panel */}
+          <button
+            onClick={() => setIsControlsOpen((prev) => !prev)}
+            className={`sm:hidden p-2.5 rounded-2xl glass-panel transition shadow-xl ${
+              isControlsOpen ? 'border-violet-500 bg-violet-600/20 text-violet-400' : 'text-gray-300'
+            }`}
+            title="Radar & Radius Filters"
+          >
+            <Sliders className="w-4 h-4" />
+          </button>
+
           <button
             onClick={handleRecenterSelf}
             disabled={!tracker.coords}
             title="Recenter to my location"
-            className="p-3 rounded-2xl glass-panel hover:border-violet-500/30 disabled:opacity-40 transition shadow-xl"
+            className="p-2.5 sm:p-3 rounded-2xl glass-panel hover:border-violet-500/30 disabled:opacity-40 transition shadow-xl active:scale-95"
           >
             <Crosshair className="w-4 h-4 text-cyan-400" />
           </button>
@@ -180,15 +196,19 @@ export const OrbitMapDashboard: React.FC = () => {
           <button
             onClick={() => refreshLocations()}
             title="Refresh map coordinates"
-            className="p-3 rounded-2xl glass-panel hover:border-violet-500/30 transition shadow-xl"
+            className="p-2.5 sm:p-3 rounded-2xl glass-panel hover:border-violet-500/30 transition shadow-xl active:scale-95"
           >
             <RefreshCw className={`w-4 h-4 text-violet-400 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* Floating Control Card (Left Side) */}
-      <div className="absolute top-20 left-4 z-[1000] w-72 max-w-[calc(100vw-2rem)] glass-panel rounded-2xl p-4 shadow-2xl space-y-4 animate-fade-in">
+      {/* Floating Control Card (Left Side Desktop, Drawer on Mobile) */}
+      <div
+        className={`absolute top-16 left-3 sm:top-20 sm:left-4 z-[1000] w-72 max-w-[calc(100vw-1.5rem)] glass-panel rounded-2xl p-4 shadow-2xl space-y-4 transition-all duration-300 ${
+          isControlsOpen ? 'block animate-fade-in' : 'hidden sm:block'
+        }`}
+      >
         {/* Location Sharing Toggle */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -247,8 +267,10 @@ export const OrbitMapDashboard: React.FC = () => {
             {[1, 5, 10, 25, 'all'].map((val) => (
               <button
                 key={val}
-                onClick={() => setRangeKm(val as number | 'all')}
-                className={`py-1.5 rounded-lg transition ${
+                onClick={() => {
+                  setRangeKm(val as number | 'all')
+                }}
+                className={`py-1.5 rounded-lg transition active:scale-95 ${
                   rangeKm === val
                     ? 'bg-violet-600 text-white shadow-md shadow-violet-600/30'
                     : 'hover:text-white'
@@ -395,32 +417,32 @@ export const OrbitMapDashboard: React.FC = () => {
         </MapContainer>
       </div>
 
-      {/* Bottom Nearby Friends Drawer */}
-      <div className="absolute bottom-4 left-4 right-4 z-[1000] pointer-events-none">
-        <div className="pointer-events-auto max-w-4xl mx-auto glass-panel p-4 rounded-3xl shadow-2xl space-y-3">
+      {/* Bottom Nearby Friends Drawer (Mobile bottom sheet / Desktop bottom panel) */}
+      <div className="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4 z-[1000] pointer-events-none safe-bottom safe-left safe-right">
+        <div className="pointer-events-auto max-w-4xl mx-auto glass-panel p-3 sm:p-4 rounded-2xl sm:rounded-3xl shadow-2xl space-y-2.5">
           <div className="flex items-center justify-between px-1">
-            <span className="font-bold text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <Users className="w-4 h-4 text-violet-400" />
+            <span className="font-bold text-xs sm:text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-violet-400" />
               Nearby Friends ({filteredFriends.length})
             </span>
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-              Within {rangeKm === 'all' ? 'any distance' : `${rangeKm} km`}
+            <span className="text-[11px] sm:text-xs" style={{ color: 'var(--text-muted)' }}>
+              {rangeKm === 'all' ? 'Any distance' : `Within ${rangeKm} km`}
             </span>
           </div>
 
           {filteredFriends.length === 0 ? (
-            <div className="py-3 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
+            <div className="py-2.5 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
               {locations.length === 0
                 ? 'No friends sharing location. Grant permissions in Privacy settings.'
                 : 'No authorized friends visible in this radius.'}
             </div>
           ) : (
-            <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
+            <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none snap-x touch-pan-x">
               {filteredFriends.map((item) => (
                 <div
                   key={item.friend_id}
                   onClick={() => handleFocusFriend(item)}
-                  className={`min-w-[180px] p-3 rounded-2xl border transition cursor-pointer flex items-center justify-between gap-3 ${
+                  className={`min-w-[170px] sm:min-w-[190px] p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition cursor-pointer flex items-center justify-between gap-2.5 snap-start shrink-0 active:scale-95 ${
                     selectedFriend?.friend_id === item.friend_id
                       ? 'bg-violet-600/20 border-violet-500/50 shadow-lg shadow-violet-600/20'
                       : 'hover:border-violet-500/20'
@@ -430,8 +452,8 @@ export const OrbitMapDashboard: React.FC = () => {
                     borderColor: selectedFriend?.friend_id === item.friend_id ? undefined : 'var(--border-subtle)',
                   }}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-9 h-9 rounded-full bg-violet-600/20 border border-violet-500/30 flex items-center justify-center font-bold text-violet-300 shrink-0 overflow-hidden">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-violet-600/20 border border-violet-500/30 flex items-center justify-center font-bold text-xs sm:text-sm text-violet-300 shrink-0 overflow-hidden">
                       {item.avatar_url ? (
                         <img src={item.avatar_url} alt={item.display_name} className="w-full h-full object-cover rounded-full" />
                       ) : (
@@ -445,9 +467,9 @@ export const OrbitMapDashboard: React.FC = () => {
                       <p className="text-[10px] font-mono truncate" style={{ color: 'var(--text-muted)' }}>
                         @{item.username}
                       </p>
-                      <p className="text-[10px] text-violet-400 font-semibold mt-0.5">
+                      <p className="text-[10px] text-violet-400 font-semibold">
                         {item.morphed_presence
-                          ? 'Morphed Presence'
+                          ? 'Morphed'
                           : formatDistance(item.distance_meters ? item.distance_meters / 1000 : null)}
                       </p>
                     </div>
@@ -459,10 +481,10 @@ export const OrbitMapDashboard: React.FC = () => {
                         e.stopPropagation()
                         handleFocusFriend(item)
                       }}
-                      className="p-2 rounded-xl bg-violet-600/30 hover:bg-violet-600 text-violet-200 hover:text-white transition shrink-0"
+                      className="p-1.5 sm:p-2 rounded-xl bg-violet-600/30 hover:bg-violet-600 text-violet-200 hover:text-white transition shrink-0 active:scale-90"
                       title="Focus on map"
                     >
-                      <Navigation className="w-3.5 h-3.5" />
+                      <Navigation className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                     </button>
                   )}
                 </div>

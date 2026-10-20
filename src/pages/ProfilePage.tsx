@@ -109,12 +109,21 @@ export const ProfilePage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Profile Settings</h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-          Manage your public identity and profile details visible to friends.
-        </p>
+    <div className="max-w-4xl mx-auto space-y-6 px-1 sm:px-0">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Profile Settings</h1>
+          <p className="text-xs sm:text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
+            Manage your public identity and profile details visible to friends.
+          </p>
+        </div>
+        {/* Mobile Sign Out Button */}
+        <button
+          onClick={signOut}
+          className="md:hidden px-3 py-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-400 text-xs font-semibold hover:bg-rose-500/20 active:scale-95 transition"
+        >
+          Sign Out
+        </button>
       </div>
 
       {statusMsg && (

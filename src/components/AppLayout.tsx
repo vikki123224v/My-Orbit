@@ -164,10 +164,65 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </main>
       </div>
 
-      {/* Mobile Floating Bottom Navigation */}
+      {/* Mobile Top Header (with Logo, User Avatar, and Theme Toggle) */}
+      <header
+        className="md:hidden sticky top-0 z-40 border-b px-4 py-2.5 flex items-center justify-between backdrop-blur-xl safe-top"
+        style={{
+          backgroundColor: 'var(--nav-bg)',
+          borderBottomColor: 'var(--sidebar-border)',
+        }}
+      >
+        <div
+          onClick={() => navigate('/app')}
+          className="flex items-center gap-2.5 cursor-pointer"
+        >
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-violet-600 to-cyan-500 flex items-center justify-center shadow-md">
+            <Radio className="w-4 h-4 text-white animate-pulse" />
+          </div>
+          <div>
+            <h1 className="font-bold text-base tracking-tight bg-gradient-to-r from-violet-500 via-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+              Orbit
+            </h1>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Theme Switcher Button */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-xl transition hover:bg-violet-500/10 active:scale-95"
+            style={{ color: 'var(--text-secondary)' }}
+            title={isDark ? 'Switch to Light' : 'Switch to Dark'}
+          >
+            {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-violet-500" />}
+          </button>
+
+          {/* User Avatar linking to profile */}
+          <button
+            onClick={() => navigate('/profile')}
+            className="w-8 h-8 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-700 flex items-center justify-center font-semibold text-xs text-white border border-white/10 overflow-hidden active:scale-95 transition"
+            title="Profile"
+          >
+            {profile?.avatar_url ? (
+              <img
+                src={profile.avatar_url}
+                alt={profile.display_name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span>{(profile?.display_name || user?.email || 'U')[0].toUpperCase()}</span>
+            )}
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile Bottom Navigation Bar (iOS / Android Safe) */}
       <nav
-        className="md:hidden sticky bottom-0 z-50 border-t px-4 py-2 flex items-center justify-around backdrop-blur-xl"
-        style={{ backgroundColor: 'var(--nav-bg)', borderTopColor: 'var(--sidebar-border)' }}
+        className="md:hidden sticky bottom-0 z-50 border-t px-2 py-1.5 flex items-center justify-around backdrop-blur-xl safe-bottom shadow-2xl"
+        style={{
+          backgroundColor: 'var(--nav-bg)',
+          borderTopColor: 'var(--sidebar-border)',
+        }}
       >
         {navItems.map((item) => {
           const Icon = item.icon
@@ -176,28 +231,21 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `flex flex-col items-center gap-1 py-1 px-3 rounded-lg text-xs font-medium transition ${
-                  isActive ? 'text-violet-500 font-semibold' : ''
+                `flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[11px] font-medium transition active:scale-95 ${
+                  isActive
+                    ? 'text-violet-500 font-semibold'
+                    : 'hover:text-violet-400'
                 }`
               }
               style={({ isActive }) => ({
                 color: isActive ? undefined : 'var(--text-muted)',
               })}
             >
-              <Icon className="w-5 h-5" />
-              <span>{item.name}</span>
+              <Icon className="w-5 h-5 mb-0.5" />
+              <span className="truncate">{item.name.replace('Location ', '')}</span>
             </NavLink>
           )
         })}
-        {/* Mobile theme toggle */}
-        <button
-          onClick={toggleTheme}
-          className="flex flex-col items-center gap-1 py-1 px-3 rounded-lg text-xs font-medium transition"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          {isDark ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-violet-500" />}
-          <span>{isDark ? 'Light' : 'Dark'}</span>
-        </button>
       </nav>
     </div>
   )

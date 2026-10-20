@@ -111,13 +111,13 @@ export const PrivacyPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6" style={{ color: 'var(--text-primary)' }}>
+    <div className="max-w-4xl mx-auto space-y-5 px-1 sm:px-0" style={{ color: 'var(--text-primary)' }}>
       <div>
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2.5" style={{ color: 'var(--text-primary)' }}>
-          <ShieldCheck className="w-7 h-7 text-cyan-400" />
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2.5" style={{ color: 'var(--text-primary)' }}>
+          <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7 text-cyan-400" />
           Location Privacy Center
         </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-xs sm:text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
           Every location access is explicit, directional, and under your command.
         </p>
       </div>
@@ -136,9 +136,9 @@ export const PrivacyPage: React.FC = () => {
       )}
 
       {/* 1. Master Sharing Switch */}
-      <div className="glass-panel p-6 rounded-2xl space-y-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-start gap-3.5">
+      <div className="glass-panel p-4 sm:p-6 rounded-2xl space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-start gap-3">
             <div
               className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border transition ${
                 tracker.isTracking

@@ -146,47 +146,52 @@ export const FriendsPage: React.FC = () => {
     incomingRequests.some((r) => r.sender_id === profileId)
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="max-w-5xl mx-auto space-y-5 px-1 sm:px-0">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
-            <Users className="w-7 h-7 text-violet-400" />
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2.5" style={{ color: 'var(--text-primary)' }}>
+            <Users className="w-6 h-6 sm:w-7 sm:h-7 text-violet-400" />
             Friends & Connections
           </h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-xs sm:text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
             Search usernames, handle friend requests, and maintain your trusted inner circle.
           </p>
         </div>
 
-        {/* Action Tabs */}
-        <div className="flex bg-[#111827] p-1 rounded-xl border border-white/5 text-xs font-semibold">
+        {/* Action Tabs (Responsive Grid on Mobile) */}
+        <div
+          className="grid grid-cols-3 sm:flex p-1 rounded-xl text-xs font-semibold shadow-inner"
+          style={{ backgroundColor: 'var(--bg-card-solid)', border: '1px solid var(--border-color)' }}
+        >
           <button
             onClick={() => {
               setActiveTab('all')
               setStatusMessage(null)
             }}
-            className={`px-3.5 py-2 rounded-lg transition ${
+            className={`px-2.5 sm:px-3.5 py-2 rounded-lg transition active:scale-95 text-center ${
               activeTab === 'all'
                 ? 'bg-violet-600 text-white shadow-md shadow-violet-600/30'
-                : 'text-gray-400 hover:text-white'
+                : 'hover:text-white'
             }`}
+            style={{ color: activeTab === 'all' ? undefined : 'var(--text-muted)' }}
           >
-            All Friends ({friends.length})
+            Friends ({friends.length})
           </button>
           <button
             onClick={() => {
               setActiveTab('requests')
               setStatusMessage(null)
             }}
-            className={`px-3.5 py-2 rounded-lg transition relative ${
+            className={`px-2.5 sm:px-3.5 py-2 rounded-lg transition relative active:scale-95 text-center ${
               activeTab === 'requests'
                 ? 'bg-violet-600 text-white shadow-md shadow-violet-600/30'
-                : 'text-gray-400 hover:text-white'
+                : 'hover:text-white'
             }`}
+            style={{ color: activeTab === 'requests' ? undefined : 'var(--text-muted)' }}
           >
             Requests ({incomingRequests.length + outgoingRequests.length})
             {incomingRequests.length > 0 && (
-              <span className="ml-1.5 w-2 h-2 rounded-full bg-cyan-400 inline-block animate-ping" />
+              <span className="ml-1 w-2 h-2 rounded-full bg-cyan-400 inline-block animate-ping" />
             )}
           </button>
           <button
@@ -194,11 +199,12 @@ export const FriendsPage: React.FC = () => {
               setActiveTab('search')
               setStatusMessage(null)
             }}
-            className={`px-3.5 py-2 rounded-lg transition ${
+            className={`px-2.5 sm:px-3.5 py-2 rounded-lg transition active:scale-95 text-center ${
               activeTab === 'search'
                 ? 'bg-violet-600 text-white shadow-md shadow-violet-600/30'
-                : 'text-gray-400 hover:text-white'
+                : 'hover:text-white'
             }`}
+            style={{ color: activeTab === 'search' ? undefined : 'var(--text-muted)' }}
           >
             Find People
           </button>
