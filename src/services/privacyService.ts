@@ -77,15 +77,33 @@ export const privacyService = {
   async setMorphedPresence(userId: string, enabled: boolean): Promise<void> {
     if (!isConfigured(userId)) return
 
-    const { error } = await supabase
+    // First try UPDATE (row should exist from trigger on sign-up)
+    const { data: existing } = await supabase
       .from('presence_preferences')
-      .upsert({
-        owner_id: userId,
-        morphed_presence_enabled: enabled,
-        updated_at: new Date().toISOString(),
-      })
+      .select('owner_id')
+      .eq('owner_id', userId)
+      .single()
 
-    if (error) throw error
+    if (existing) {
+      const { error } = await supabase
+        .from('presence_preferences')
+        .update({
+          morphed_presence_enabled: enabled,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('owner_id', userId)
+      if (error) throw error
+    } else {
+      // Row missing (e.g. Google OAuth user before trigger ran) — insert
+      const { error } = await supabase
+        .from('presence_preferences')
+        .insert({
+          owner_id: userId,
+          morphed_presence_enabled: enabled,
+          updated_at: new Date().toISOString(),
+        })
+      if (error) throw error
+    }
   },
 
   // Fetch friend-by-friend permissions list

@@ -111,13 +111,13 @@ export const PrivacyPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6" style={{ color: 'var(--text-primary)' }}>
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
+        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2.5" style={{ color: 'var(--text-primary)' }}>
           <ShieldCheck className="w-7 h-7 text-cyan-400" />
           Location Privacy Center
         </h1>
-        <p className="text-sm text-gray-400 mt-1">
+        <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
           Every location access is explicit, directional, and under your command.
         </p>
       </div>
@@ -136,116 +136,120 @@ export const PrivacyPage: React.FC = () => {
       )}
 
       {/* 1. Master Sharing Switch */}
-      <div className="glass-panel p-6 rounded-2xl border border-white/5 space-y-4">
+      <div className="glass-panel p-6 rounded-2xl space-y-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-start gap-3.5">
             <div
               className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border transition ${
                 tracker.isTracking
                   ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400 shadow-lg shadow-emerald-500/20'
-                  : 'bg-white/5 border-white/10 text-gray-400'
+                  : 'border text-gray-400'
               }`}
+              style={!tracker.isTracking ? { backgroundColor: 'var(--bg-hover)', borderColor: 'var(--border-color)' } : {}}
             >
               <Radio className={`w-6 h-6 ${tracker.isTracking ? 'animate-pulse' : ''}`} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-white text-base">
+                <h3 className="font-semibold text-base" style={{ color: 'var(--text-primary)' }}>
                   Master Location Sharing
                 </h3>
                 <span
                   className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                     tracker.isTracking
                       ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                      : 'bg-gray-800 text-gray-400 border border-gray-700'
+                      : 'border'
                   }`}
+                  style={!tracker.isTracking ? { backgroundColor: 'var(--bg-hover)', color: 'var(--text-muted)', borderColor: 'var(--border-color)' } : {}}
                 >
                   {tracker.isTracking ? 'ACTIVE' : 'OFF (SECURE)'}
                 </span>
               </div>
-              <p className="text-xs text-gray-400 mt-1 max-w-lg leading-relaxed">
-                When turned OFF, browser geolocation stops immediately and previously recorded exact coordinates are purged from the database.
+              <p className="text-xs mt-1 max-w-lg leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                When turned OFF, browser geolocation stops immediately and coordinates are purged from the database.
               </p>
             </div>
           </div>
 
-          {/* Toggle Switch */}
           <button
             onClick={handleToggleMasterSharing}
             type="button"
-            className={`w-14 h-8 rounded-full transition p-1 cursor-pointer relative shrink-0 ${
-              tracker.isTracking ? 'bg-violet-600' : 'bg-gray-700'
+            role="switch"
+            aria-checked={tracker.isTracking}
+            className={`w-14 h-8 rounded-full transition-all p-1 cursor-pointer relative shrink-0 toggle-track ${
+              tracker.isTracking ? 'bg-violet-600' : 'bg-gray-600'
             }`}
           >
             <div
-              className={`w-6 h-6 rounded-full bg-white transition transform ${
-                tracker.isTracking ? 'translate-x-6' : 'translate-x-0'
-              } shadow-md`}
+              className="w-6 h-6 rounded-full bg-white toggle-thumb shadow-md"
+              style={{ transform: tracker.isTracking ? 'translateX(24px)' : 'translateX(0)' }}
             />
           </button>
         </div>
       </div>
 
       {/* 2. Morphed Presence Mode */}
-      <div className="glass-panel p-6 rounded-2xl border border-white/5 space-y-4">
+      <div className="glass-panel p-6 rounded-2xl space-y-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-start gap-3.5">
             <div
               className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border transition ${
                 morphedPresence
                   ? 'bg-violet-500/15 border-violet-500/30 text-violet-400 shadow-lg shadow-violet-500/20'
-                  : 'bg-white/5 border-white/10 text-gray-400'
+                  : 'border'
               }`}
+              style={!morphedPresence ? { backgroundColor: 'var(--bg-hover)', borderColor: 'var(--border-color)', color: 'var(--text-muted)' } : {}}
             >
               {morphedPresence ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-white text-base">
+                <h3 className="font-semibold text-base" style={{ color: 'var(--text-primary)' }}>
                   Morphed Presence (Privacy Mode)
                 </h3>
                 <span
                   className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                     morphedPresence
                       ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
-                      : 'bg-gray-800 text-gray-400 border border-gray-700'
+                      : 'border'
                   }`}
+                  style={!morphedPresence ? { backgroundColor: 'var(--bg-hover)', color: 'var(--text-muted)', borderColor: 'var(--border-color)' } : {}}
                 >
                   {morphedPresence ? 'ENABLED' : 'DISABLED'}
                 </span>
               </div>
-              <p className="text-xs text-gray-400 mt-1 max-w-lg leading-relaxed">
-                When enabled, PostgreSQL automatically masks your coordinates to <code className="text-violet-300 font-mono">NULL</code>. Friends see a stylized purple orbital marker with a question mark indicating you are out, with <strong>zero exact coordinate exposure</strong>.
+              <p className="text-xs mt-1 max-w-lg leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                When enabled, coordinates are masked to <code className="text-violet-400 font-mono">NULL</code> at the database layer. Friends see you are active but can't see your exact location.
               </p>
             </div>
           </div>
 
-          {/* Toggle Switch */}
           <button
             onClick={handleToggleMorphed}
             type="button"
-            className={`w-14 h-8 rounded-full transition p-1 cursor-pointer relative shrink-0 ${
-              morphedPresence ? 'bg-violet-600' : 'bg-gray-700'
+            role="switch"
+            aria-checked={morphedPresence}
+            className={`w-14 h-8 rounded-full transition-all p-1 cursor-pointer relative shrink-0 toggle-track ${
+              morphedPresence ? 'bg-violet-600' : 'bg-gray-600'
             }`}
           >
             <div
-              className={`w-6 h-6 rounded-full bg-white transition transform ${
-                morphedPresence ? 'translate-x-6' : 'translate-x-0'
-              } shadow-md`}
+              className="w-6 h-6 rounded-full bg-white toggle-thumb shadow-md"
+              style={{ transform: morphedPresence ? 'translateX(24px)' : 'translateX(0)' }}
             />
           </button>
         </div>
 
-        <div className="p-3 bg-violet-950/20 border border-violet-500/20 rounded-xl flex items-start gap-2.5 text-xs text-violet-300">
-          <Info className="w-4 h-4 shrink-0 text-violet-400 mt-0.5" />
+        <div className="p-3 bg-violet-500/10 border border-violet-500/20 rounded-xl flex items-start gap-2.5 text-xs text-violet-400">
+          <Info className="w-4 h-4 shrink-0 mt-0.5" />
           <span>
-            <strong>Zero-Leak Guarantee:</strong> Unlike visual blur overlays in client code, Morphed Presence is enforced at the database layer inside the PostgreSQL RPC. Unpermitted coordinates never leave the server.
+            <strong>Zero-Leak Guarantee:</strong> Morphed Presence is enforced at the PostgreSQL RPC layer — unpermitted coordinates never leave the server.
           </span>
         </div>
       </div>
 
       {/* 3. Friend-by-Friend Permission Matrix */}
-      <div className="glass-panel p-6 rounded-2xl border border-white/5 space-y-4">
+      <div className="glass-panel p-6 rounded-2xl space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-white text-base flex items-center gap-2">

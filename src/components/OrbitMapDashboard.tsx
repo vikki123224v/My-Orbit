@@ -11,6 +11,7 @@ import { useLocationTracker } from '../hooks/useLocationTracker'
 import { useAuthorizedLocations } from '../hooks/useAuthorizedLocations'
 import { createUserMarkerIcon } from '../components/MapMarkers'
 import { formatDistance, formatLastUpdated } from '../utils/geoUtils'
+import { useTheme } from '../context/ThemeContext'
 import type { AuthorizedFriendLocation } from '../types/database'
 import {
   Sliders,
@@ -22,6 +23,8 @@ import {
   ShieldAlert,
   Compass,
   AlertTriangle,
+  Radio,
+  WifiOff,
 } from 'lucide-react'
 
 // Recenter Map Helper Component
@@ -39,15 +42,30 @@ function MapViewController({
   return null
 }
 
+// Map tile configs
+const DARK_TILE = {
+  url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  attribution:
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  maxZoom: 20,
+}
+
+const LIGHT_TILE = {
+  url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  attribution:
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  maxZoom: 20,
+}
+
 export const OrbitMapDashboard: React.FC = () => {
   const tracker = useLocationTracker()
   const { locations, loading, refreshLocations } = useAuthorizedLocations(tracker.coords)
+  const { isDark } = useTheme()
 
-  // Distance Range Filter: 1, 5, 10, 25, or 'all' (default is 5 km)
   const [rangeKm, setRangeKm] = useState<number | 'all'>(5)
   const [selectedFriend, setSelectedFriend] = useState<AuthorizedFriendLocation | null>(null)
   const [searchFriendText, setSearchFriendText] = useState('')
-  const [mapCenter, setMapCenter] = useState<[number, number]>([13.3409, 74.7421]) // Default coordinate center
+  const [mapCenter, setMapCenter] = useState<[number, number]>([13.3409, 74.7421])
   const [mapZoom, setMapZoom] = useState<number>(14)
   const [showPermissionPrompt, setShowPermissionPrompt] = useState(false)
 
@@ -61,25 +79,23 @@ export const OrbitMapDashboard: React.FC = () => {
   // Filter friends based on range and search text
   const filteredFriends = useMemo(() => {
     return locations.filter((f) => {
-      // Username/display filter
       const matchesSearch =
         f.display_name.toLowerCase().includes(searchFriendText.toLowerCase()) ||
         f.username.toLowerCase().includes(searchFriendText.toLowerCase())
 
       if (!matchesSearch) return false
-
-      // Distance filter
       if (rangeKm === 'all') return true
-      if (f.distance_meters === undefined) return true // Show Morphed Presence or uncalculated
+      if (f.distance_meters === undefined) return true
       return f.distance_meters <= rangeKm * 1000
     })
   }, [locations, rangeKm, searchFriendText])
 
-  const handleStartSharingClick = () => {
-    if (!tracker.isTracking) {
-      setShowPermissionPrompt(true)
-    } else {
+  // Toggle location sharing: show consent dialog if OFF, stop if ON
+  const handleShareToggle = () => {
+    if (tracker.isTracking) {
       tracker.stopTracking()
+    } else {
+      setShowPermissionPrompt(true)
     }
   }
 
@@ -103,13 +119,15 @@ export const OrbitMapDashboard: React.FC = () => {
     }
   }
 
+  const tile = isDark ? DARK_TILE : LIGHT_TILE
+
   return (
-    <div className="relative w-full h-[calc(100vh-4rem)] md:h-screen flex flex-col overflow-hidden bg-[#090d16]">
+    <div className="relative w-full h-[calc(100vh-4rem)] md:h-screen flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)' }}>
       {/* Top Floating Control Bar */}
       <div className="absolute top-4 left-4 right-4 z-[1000] flex flex-col sm:flex-row gap-3 pointer-events-none">
-        {/* Search Friends Searchbar */}
-        <div className="pointer-events-auto flex-1 max-w-md glass-panel rounded-2xl p-1.5 flex items-center gap-2 shadow-2xl border border-white/10">
-          <div className="pl-3 text-gray-400">
+        {/* Search Bar */}
+        <div className="pointer-events-auto flex-1 max-w-md glass-panel rounded-2xl p-1.5 flex items-center gap-2 shadow-2xl">
+          <div className="pl-3" style={{ color: 'var(--text-muted)' }}>
             <Search className="w-4 h-4" />
           </div>
           <input
@@ -117,82 +135,100 @@ export const OrbitMapDashboard: React.FC = () => {
             value={searchFriendText}
             onChange={(e) => setSearchFriendText(e.target.value)}
             placeholder="Search nearby friends..."
-            className="w-full bg-transparent text-sm text-white placeholder-gray-400 focus:outline-none"
+            className="w-full bg-transparent text-sm focus:outline-none"
+            style={{ color: 'var(--text-primary)' }}
           />
           {searchFriendText && (
             <button
               onClick={() => setSearchFriendText('')}
-              className="pr-3 text-xs text-gray-400 hover:text-white"
+              className="pr-3 text-xs hover:text-white transition"
+              style={{ color: 'var(--text-muted)' }}
             >
               Clear
             </button>
           )}
         </div>
 
-        {/* Quick Location Action Controls */}
+        {/* Quick Action Buttons */}
         <div className="pointer-events-auto flex items-center gap-2 self-start sm:self-auto">
-          {/* Recenter Button */}
           <button
             onClick={handleRecenterSelf}
             disabled={!tracker.coords}
             title="Recenter to my location"
-            className="p-3 rounded-2xl glass-panel border border-white/10 text-gray-300 hover:text-white hover:border-violet-500/30 disabled:opacity-40 transition shadow-xl"
+            className="p-3 rounded-2xl glass-panel hover:border-violet-500/30 disabled:opacity-40 transition shadow-xl"
           >
             <Crosshair className="w-4 h-4 text-cyan-400" />
           </button>
 
-          {/* Refresh Action */}
           <button
             onClick={() => refreshLocations()}
             title="Refresh map coordinates"
-            className="p-3 rounded-2xl glass-panel border border-white/10 text-gray-300 hover:text-white hover:border-violet-500/30 transition shadow-xl"
+            className="p-3 rounded-2xl glass-panel hover:border-violet-500/30 transition shadow-xl"
           >
             <RefreshCw className={`w-4 h-4 text-violet-400 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* Floating Status & Range Control Card (Left Side) */}
-      <div className="absolute top-20 left-4 z-[1000] w-80 max-w-[calc(100vw-2rem)] glass-panel rounded-2xl p-5 border border-white/10 shadow-2xl space-y-4">
-        {/* Location Sharing Master Toggle */}
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-xs font-semibold text-white block">
-              Location Sharing
-            </span>
-            <span className="text-[11px] text-gray-400">
-              {tracker.isTracking ? 'Broadcasting to permitted friends' : 'Sharing is OFF (Protected)'}
-            </span>
+      {/* Floating Control Card (Left Side) */}
+      <div className="absolute top-20 left-4 z-[1000] w-72 max-w-[calc(100vw-2rem)] glass-panel rounded-2xl p-4 shadow-2xl space-y-4 animate-fade-in">
+        {/* Location Sharing Toggle */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div
+              className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition ${
+                tracker.isTracking
+                  ? 'bg-emerald-500/20 text-emerald-400'
+                  : 'bg-white/5 text-gray-500'
+              }`}
+            >
+              {tracker.isTracking ? (
+                <Radio className="w-4 h-4 animate-pulse" />
+              ) : (
+                <WifiOff className="w-4 h-4" />
+              )}
+            </div>
+            <div className="min-w-0">
+              <span className="text-xs font-semibold block" style={{ color: 'var(--text-primary)' }}>
+                Location Sharing
+              </span>
+              <span className="text-[11px] truncate block" style={{ color: 'var(--text-muted)' }}>
+                {tracker.isTracking ? 'Broadcasting live' : 'OFF — Protected'}
+              </span>
+            </div>
           </div>
 
           <button
-            onClick={handleStartSharingClick}
+            onClick={handleShareToggle}
             type="button"
-            className={`w-12 h-6 rounded-full transition p-0.5 relative shrink-0 ${
-              tracker.isTracking ? 'bg-emerald-500' : 'bg-gray-700'
+            role="switch"
+            aria-checked={tracker.isTracking}
+            className={`w-12 h-6 rounded-full transition-all p-0.5 relative shrink-0 toggle-track ${
+              tracker.isTracking ? 'bg-emerald-500' : 'bg-gray-600'
             }`}
           >
             <div
-              className={`w-5 h-5 rounded-full bg-white transition transform ${
+              className={`w-5 h-5 rounded-full bg-white toggle-thumb shadow-md ${
                 tracker.isTracking ? 'translate-x-6' : 'translate-x-0'
-              } shadow-md`}
+              }`}
+              style={{ transform: tracker.isTracking ? 'translateX(24px)' : 'translateX(0)' }}
             />
           </button>
         </div>
 
-        {/* Range Segmented Selector */}
-        <div className="space-y-2 pt-2 border-t border-white/5">
+        {/* Range Selector */}
+        <div className="space-y-2 pt-2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
           <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-300 font-medium flex items-center gap-1.5">
+            <span className="font-medium flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
               <Sliders className="w-3.5 h-3.5 text-violet-400" />
-              Radius Range:
+              Radius:
             </span>
             <span className="font-bold text-violet-400">
-              {rangeKm === 'all' ? 'All Distance' : `${rangeKm} km`}
+              {rangeKm === 'all' ? 'All' : `${rangeKm} km`}
             </span>
           </div>
 
-          <div className="grid grid-cols-5 gap-1 bg-black/40 p-1 rounded-xl text-xs font-semibold">
+          <div className="grid grid-cols-5 gap-1 bg-black/20 p-1 rounded-xl text-xs font-semibold">
             {[1, 5, 10, 25, 'all'].map((val) => (
               <button
                 key={val}
@@ -200,8 +236,9 @@ export const OrbitMapDashboard: React.FC = () => {
                 className={`py-1.5 rounded-lg transition ${
                   rangeKm === val
                     ? 'bg-violet-600 text-white shadow-md shadow-violet-600/30'
-                    : 'text-gray-400 hover:text-white'
+                    : 'hover:text-white'
                 }`}
+                style={{ color: rangeKm === val ? undefined : 'var(--text-muted)' }}
               >
                 {val === 'all' ? 'All' : `${val}k`}
               </button>
@@ -209,6 +246,18 @@ export const OrbitMapDashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Friends count indicator */}
+        {locations.length > 0 && (
+          <div className="flex items-center justify-between text-xs pt-1" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+            <span className="flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
+              <Users className="w-3.5 h-3.5 text-violet-400" />
+              Visible Friends
+            </span>
+            <span className="font-bold text-violet-400">{filteredFriends.length}</span>
+          </div>
+        )}
+
+        {/* Error Display */}
         {tracker.error && (
           <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
@@ -217,7 +266,7 @@ export const OrbitMapDashboard: React.FC = () => {
         )}
       </div>
 
-      {/* Main Interactive Map Canvas */}
+      {/* Main Interactive Map */}
       <div className="flex-1 w-full h-full">
         <MapContainer
           center={mapCenter}
@@ -227,18 +276,17 @@ export const OrbitMapDashboard: React.FC = () => {
         >
           <MapViewController center={mapCenter} zoom={mapZoom} />
 
-          {/* 100% Free OpenStreetMap Tiles styled with sleek dark theme */}
+          {/* CARTO map tiles — no API key needed, beautiful dark/light styles */}
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-            maxZoom={19}
-            className="map-tiles-dark"
+            attribution={tile.attribution}
+            url={tile.url}
+            maxZoom={tile.maxZoom}
+            subdomains="abcd"
           />
 
-          {/* User Self Marker & Range Circles */}
+          {/* Self Marker & Range Circles */}
           {tracker.coords && (
             <>
-              {/* Range Perimeter Circle */}
               {rangeKm !== 'all' && (
                 <Circle
                   center={[tracker.coords.latitude, tracker.coords.longitude]}
@@ -253,7 +301,6 @@ export const OrbitMapDashboard: React.FC = () => {
                 />
               )}
 
-              {/* Accuracy Inner Bubble */}
               {tracker.coords.accuracy && (
                 <Circle
                   center={[tracker.coords.latitude, tracker.coords.longitude]}
@@ -267,16 +314,15 @@ export const OrbitMapDashboard: React.FC = () => {
                 />
               )}
 
-              {/* Self Marker */}
               <Marker
                 position={[tracker.coords.latitude, tracker.coords.longitude]}
                 icon={createUserMarkerIcon(null, 'You', true)}
               >
                 <Popup>
-                  <div className="p-3 text-left space-y-1">
-                    <p className="font-bold text-white text-sm">Your Location</p>
+                  <div className="p-3 text-left space-y-1" style={{ color: 'var(--popup-text)' }}>
+                    <p className="font-bold text-sm">Your Location</p>
                     <p className="text-xs text-cyan-400 font-semibold">Broadcasting Live</p>
-                    <p className="text-[11px] text-gray-400">
+                    <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
                       Accuracy: ~{Math.round(tracker.coords.accuracy || 10)} meters
                     </p>
                   </div>
@@ -287,11 +333,7 @@ export const OrbitMapDashboard: React.FC = () => {
 
           {/* Authorized Friend Markers */}
           {filteredFriends.map((friend) => {
-            if (friend.morphed_presence) {
-              // Morphed Presence: friend is active, but coordinates are shielded
-              return null
-            }
-
+            if (friend.morphed_presence) return null
             if (friend.latitude === null || friend.longitude === null) return null
 
             return (
@@ -304,26 +346,28 @@ export const OrbitMapDashboard: React.FC = () => {
                 }}
               >
                 <Popup>
-                  <div className="p-3 text-left space-y-2 min-w-[200px]">
+                  <div className="p-3 text-left space-y-2 min-w-[200px]" style={{ color: 'var(--popup-text)' }}>
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-violet-600/30 flex items-center justify-center font-bold text-xs text-violet-300">
-                        {friend.display_name[0].toUpperCase()}
+                      <div className="w-8 h-8 rounded-full bg-violet-600/30 flex items-center justify-center font-bold text-xs text-violet-300 overflow-hidden shrink-0">
+                        {friend.avatar_url ? (
+                          <img src={friend.avatar_url} alt={friend.display_name} className="w-full h-full object-cover" />
+                        ) : (
+                          friend.display_name[0].toUpperCase()
+                        )}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-bold text-white text-sm truncate">
-                          {friend.display_name}
-                        </p>
-                        <p className="text-[11px] text-gray-400 font-mono truncate">
+                        <p className="font-bold text-sm truncate">{friend.display_name}</p>
+                        <p className="text-[11px] font-mono truncate" style={{ color: 'var(--text-muted)' }}>
                           @{friend.username}
                         </p>
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs">
+                    <div className="pt-2 flex items-center justify-between text-xs" style={{ borderTop: '1px solid var(--border-subtle)' }}>
                       <span className="text-violet-400 font-semibold">
                         {formatDistance(friend.distance_meters ? friend.distance_meters / 1000 : null)}
                       </span>
-                      <span className="text-gray-400 text-[11px]">
+                      <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
                         {formatLastUpdated(friend.last_updated)}
                       </span>
                     </div>
@@ -335,24 +379,24 @@ export const OrbitMapDashboard: React.FC = () => {
         </MapContainer>
       </div>
 
-      {/* Bottom Horizontal Nearby Friends Carousel Drawer */}
+      {/* Bottom Nearby Friends Drawer */}
       <div className="absolute bottom-4 left-4 right-4 z-[1000] pointer-events-none">
-        <div className="pointer-events-auto max-w-4xl mx-auto glass-panel p-4 rounded-3xl border border-white/10 shadow-2xl space-y-3">
+        <div className="pointer-events-auto max-w-4xl mx-auto glass-panel p-4 rounded-3xl shadow-2xl space-y-3">
           <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-sm text-white flex items-center gap-2">
-                <Users className="w-4 h-4 text-violet-400" />
-                Nearby Friends ({filteredFriends.length})
-              </span>
-            </div>
-            <span className="text-xs text-gray-400">
-              Showing within {rangeKm === 'all' ? 'any distance' : `${rangeKm} km`}
+            <span className="font-bold text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              <Users className="w-4 h-4 text-violet-400" />
+              Nearby Friends ({filteredFriends.length})
+            </span>
+            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              Within {rangeKm === 'all' ? 'any distance' : `${rangeKm} km`}
             </span>
           </div>
 
           {filteredFriends.length === 0 ? (
-            <div className="py-4 text-center text-xs text-gray-400">
-              No authorized friends sharing live in this radius.
+            <div className="py-3 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
+              {locations.length === 0
+                ? 'No friends sharing location. Grant permissions in Privacy settings.'
+                : 'No authorized friends visible in this radius.'}
             </div>
           ) : (
             <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
@@ -360,21 +404,29 @@ export const OrbitMapDashboard: React.FC = () => {
                 <div
                   key={item.friend_id}
                   onClick={() => handleFocusFriend(item)}
-                  className={`min-w-[200px] p-3 rounded-2xl border transition cursor-pointer flex items-center justify-between gap-3 ${
+                  className={`min-w-[180px] p-3 rounded-2xl border transition cursor-pointer flex items-center justify-between gap-3 ${
                     selectedFriend?.friend_id === item.friend_id
                       ? 'bg-violet-600/20 border-violet-500/50 shadow-lg shadow-violet-600/20'
-                      : 'bg-[#111827]/80 hover:bg-[#1a233a] border-white/5'
+                      : 'hover:border-violet-500/20'
                   }`}
+                  style={{
+                    backgroundColor: selectedFriend?.friend_id === item.friend_id ? undefined : 'var(--bg-card-solid)',
+                    borderColor: selectedFriend?.friend_id === item.friend_id ? undefined : 'var(--border-subtle)',
+                  }}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-10 h-10 rounded-full bg-violet-600/20 border border-violet-500/30 flex items-center justify-center font-bold text-violet-300 shrink-0">
-                      {item.display_name[0].toUpperCase()}
+                    <div className="w-9 h-9 rounded-full bg-violet-600/20 border border-violet-500/30 flex items-center justify-center font-bold text-violet-300 shrink-0 overflow-hidden">
+                      {item.avatar_url ? (
+                        <img src={item.avatar_url} alt={item.display_name} className="w-full h-full object-cover rounded-full" />
+                      ) : (
+                        item.display_name[0].toUpperCase()
+                      )}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-white truncate">
+                      <p className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>
                         {item.display_name}
                       </p>
-                      <p className="text-[10px] text-gray-400 font-mono truncate">
+                      <p className="text-[10px] font-mono truncate" style={{ color: 'var(--text-muted)' }}>
                         @{item.username}
                       </p>
                       <p className="text-[10px] text-violet-400 font-semibold mt-0.5">
@@ -391,7 +443,7 @@ export const OrbitMapDashboard: React.FC = () => {
                         e.stopPropagation()
                         handleFocusFriend(item)
                       }}
-                      className="p-2 rounded-xl bg-violet-600/30 hover:bg-violet-600 text-violet-200 hover:text-white transition"
+                      className="p-2 rounded-xl bg-violet-600/30 hover:bg-violet-600 text-violet-200 hover:text-white transition shrink-0"
                       title="Focus on map"
                     >
                       <Navigation className="w-3.5 h-3.5" />
@@ -404,30 +456,30 @@ export const OrbitMapDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Location Permission Explanation Modal */}
+      {/* Location Permission Consent Modal */}
       {showPermissionPrompt && (
         <div className="fixed inset-0 z-[2000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="glass-panel max-w-md w-full p-6 rounded-3xl border border-violet-500/30 shadow-2xl space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-violet-600/20 border border-violet-500/30 flex items-center justify-center text-violet-400 mx-auto">
+          <div className="glass-panel max-w-md w-full p-6 rounded-3xl border border-violet-500/30 shadow-2xl space-y-4 animate-fade-in">
+            <div className="w-12 h-12 rounded-2xl bg-violet-600/20 border border-violet-500/30 flex items-center justify-center text-violet-400 mx-auto pulse-ring">
               <Compass className="w-6 h-6 animate-pulse" />
             </div>
 
             <div className="text-center space-y-1">
-              <h3 className="text-lg font-bold text-white">Enable Location Sharing</h3>
-              <p className="text-xs text-gray-300 leading-relaxed">
-                Orbit needs access to your browser location to display your position and calculate distance to nearby friends.
+              <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Enable Location Sharing</h3>
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                Orbit needs browser location access to display your position and calculate distance to nearby friends.
               </p>
             </div>
 
-            <div className="p-3 bg-black/40 rounded-xl border border-white/5 text-xs text-gray-400 space-y-1.5">
-              <p className="flex items-center gap-1.5 text-gray-300 font-semibold">
+            <div className="p-3 rounded-xl border text-xs space-y-1.5" style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-subtle)' }}>
+              <p className="flex items-center gap-1.5 font-semibold" style={{ color: 'var(--text-primary)' }}>
                 <ShieldAlert className="w-3.5 h-3.5 text-cyan-400" />
-                Our Strict Privacy Guarantee:
+                Privacy Guarantee:
               </p>
-              <ul className="list-disc pl-4 space-y-1 text-[11px]">
+              <ul className="list-disc pl-4 space-y-1 text-[11px]" style={{ color: 'var(--text-secondary)' }}>
                 <li>Only accepted friends with explicit permission can see coordinates.</li>
                 <li>You can stop sharing or revoke friends at any time.</li>
-                <li>Closing this app or turning off sharing clears your coordinates immediately.</li>
+                <li>Turning off sharing purges your coordinates immediately.</li>
               </ul>
             </div>
 
@@ -435,7 +487,8 @@ export const OrbitMapDashboard: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPermissionPrompt(false)}
-                className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-semibold transition"
+                className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition"
+                style={{ backgroundColor: 'var(--bg-hover)', color: 'var(--text-secondary)' }}
               >
                 Cancel
               </button>

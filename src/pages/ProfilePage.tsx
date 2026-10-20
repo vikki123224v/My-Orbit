@@ -111,8 +111,8 @@ export const ProfilePage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">Profile Settings</h1>
-        <p className="text-sm text-gray-400 mt-1">
+        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Profile Settings</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
           Manage your public identity and profile details visible to friends.
         </p>
       </div>
@@ -135,7 +135,7 @@ export const ProfilePage: React.FC = () => {
       )}
 
       {/* Main Profile Form */}
-      <form onSubmit={handleSaveProfile} className="glass-panel p-6 sm:p-8 rounded-2xl border border-white/5 space-y-6">
+      <form onSubmit={handleSaveProfile} className="glass-panel p-6 sm:p-8 rounded-2xl space-y-6">
         {/* Avatar preview */}
         <div className="flex items-center gap-5">
           <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-cyan-500 p-0.5 shadow-xl shadow-violet-500/15">
@@ -155,9 +155,9 @@ export const ProfilePage: React.FC = () => {
             </div>
           </div>
           <div>
-            <h3 className="font-semibold text-white">{displayName || 'Your Profile'}</h3>
-            <p className="text-xs text-gray-400 font-mono mt-0.5">@{username || 'handle'}</p>
-            <p className="text-xs text-gray-500 mt-1">{user?.email}</p>
+            <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{displayName || 'Your Profile'}</h3>
+            <p className="text-xs font-mono mt-0.5" style={{ color: 'var(--text-muted)' }}>@{username || 'handle'}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{user?.email}</p>
           </div>
         </div>
 
@@ -174,7 +174,7 @@ export const ProfilePage: React.FC = () => {
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="Janifer Kate"
-                className="w-full pl-10 pr-4 py-2.5 bg-black/40 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition"
               />
             </div>
           </div>
@@ -191,7 +191,7 @@ export const ProfilePage: React.FC = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="janifer_k"
-                className="w-full pl-10 pr-4 py-2.5 bg-black/40 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition"
               />
             </div>
           </div>
@@ -208,7 +208,7 @@ export const ProfilePage: React.FC = () => {
               value={avatarUrl}
               onChange={(e) => setAvatarUrl(e.target.value)}
               placeholder="https://images.unsplash.com/photo-..."
-              className="w-full pl-10 pr-4 py-2.5 bg-black/40 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition"
             />
           </div>
         </div>

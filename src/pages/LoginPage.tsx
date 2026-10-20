@@ -21,10 +21,17 @@ export const LoginPage: React.FC = () => {
 
     setGoogleLoading(true)
     try {
+      // redirectTo must point to the root of the app (Supabase will append #access_token or ?code=)
+      // The OAuthRedirectHandler in App.tsx will then navigate to /app
+      const redirectTo = `${window.location.origin}/`
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/app`,
+          redirectTo,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       })
       if (error) {
@@ -66,7 +73,7 @@ export const LoginPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#090d16] flex flex-col justify-center py-12 sm:px-6 lg:px-8 selection:bg-violet-600/30 selection:text-violet-300">
+    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 selection:bg-violet-600/30 selection:text-violet-300" style={{ backgroundColor: 'var(--bg-primary)' }}>
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <Link to="/" className="inline-flex items-center gap-3 group">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-violet-500/25 group-hover:scale-105 transition">

@@ -30,6 +30,7 @@ export const LocationProvider: React.FC<{ userId: string | null; children: React
   userId,
   children,
 }) => {
+  // Read initial tracking state from localStorage — persists across route changes
   const [coords, setCoords] = useState<{
     latitude: number
     longitude: number
@@ -44,6 +45,9 @@ export const LocationProvider: React.FC<{ userId: string | null; children: React
   const watchIdRef = useRef<number | null>(null)
   const lastWriteTimeRef = useRef<number>(0)
   const lastCoordsRef = useRef<{ lat: number; lng: number } | null>(null)
+  // Keep userId in ref so callbacks always have latest without re-creating
+  const userIdRef = useRef<string | null>(userId)
+  useEffect(() => { userIdRef.current = userId }, [userId])
 
   // Query browser permissions if supported
   useEffect(() => {
@@ -51,9 +55,9 @@ export const LocationProvider: React.FC<{ userId: string | null; children: React
       navigator.permissions
         .query({ name: 'geolocation' as PermissionName })
         .then((result) => {
-          setPermissionStatus(result.state as any)
+          setPermissionStatus(result.state as 'prompt' | 'granted' | 'denied')
           result.onchange = () => {
-            setPermissionStatus(result.state as any)
+            setPermissionStatus(result.state as 'prompt' | 'granted' | 'denied')
           }
         })
         .catch(() => {
@@ -62,15 +66,15 @@ export const LocationProvider: React.FC<{ userId: string | null; children: React
     }
   }, [])
 
-  // Throttled database update (minimum 10 seconds between writes, or > 15 meters delta)
+  // Throttled database update (minimum 10 seconds between writes)
   const syncLocationToSupabase = useCallback(
     async (lat: number, lng: number, accuracy: number | null) => {
-      if (!userId || !isSupabaseConfigured) return
+      const uid = userIdRef.current
+      if (!uid || !isSupabaseConfigured) return
 
       const now = Date.now()
       const timeSinceLastWrite = now - lastWriteTimeRef.current
 
-      // Throttle: write at most once every 10 seconds unless coordinates moved significantly
       if (timeSinceLastWrite < 10000 && lastCoordsRef.current) {
         return
       }
@@ -82,18 +86,18 @@ export const LocationProvider: React.FC<{ userId: string | null; children: React
         await supabase
           .from('current_locations')
           .upsert({
-            owner_id: userId,
+            owner_id: uid,
             latitude: lat,
             longitude: lng,
             accuracy_meters: accuracy,
             sharing_enabled: true,
             updated_at: new Date().toISOString(),
-          })
+          }, { onConflict: 'owner_id' })
       } catch (err) {
         console.error('Failed to sync location coordinates:', err)
       }
     },
-    [userId]
+    [] // stable — uses userIdRef
   )
 
   // Start watching position
@@ -103,13 +107,12 @@ export const LocationProvider: React.FC<{ userId: string | null; children: React
       return
     }
 
+    // Guard: don't start a second watcher if one is already running
+    if (watchIdRef.current !== null) return
+
     setIsTracking(true)
     setError(null)
     localStorage.setItem('orbit_sharing_active', 'true')
-
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current)
-    }
 
     watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
@@ -117,7 +120,6 @@ export const LocationProvider: React.FC<{ userId: string | null; children: React
         setCoords({ latitude, longitude, accuracy })
         setError(null)
         setPermissionStatus('granted')
-
         syncLocationToSupabase(latitude, longitude, accuracy)
       },
       (geoError) => {
@@ -153,7 +155,8 @@ export const LocationProvider: React.FC<{ userId: string | null; children: React
     setCoords(null)
     localStorage.removeItem('orbit_sharing_active')
 
-    if (userId && isSupabaseConfigured) {
+    const uid = userIdRef.current
+    if (uid && isSupabaseConfigured) {
       try {
         await supabase
           .from('current_locations')
@@ -164,33 +167,31 @@ export const LocationProvider: React.FC<{ userId: string | null; children: React
             accuracy_meters: null,
             updated_at: new Date().toISOString(),
           })
-          .eq('owner_id', userId)
+          .eq('owner_id', uid)
       } catch (err) {
         console.error('Error clearing location upon stop:', err)
       }
     }
-  }, [userId])
+  }, [])
 
-  // Auto-resume tracking across route changes if sharing was left active in this session
+  // Auto-start tracking if localStorage says it was ON (e.g. after page refresh)
+  // Only runs once when userId becomes available
   useEffect(() => {
-    if (userId && isTracking && watchIdRef.current === null) {
+    const wasTracking = localStorage.getItem('orbit_sharing_active') === 'true'
+    if (userId && wasTracking && watchIdRef.current === null) {
       startTracking()
     }
-  }, [userId, isTracking, startTracking])
+  }, [userId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // When tab is closed or user logs out, stop watcher
+  // Clear watcher on tab close but preserve localStorage so reload resumes
   useEffect(() => {
     const handleBeforeUnload = () => {
-      // Browser closing
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current)
       }
     }
-
     window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
-    }
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [])
 
   return (

@@ -101,7 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false)
     })
 
-    // Listen to auth state transitions
+    // Listen to auth state transitions (including OAuth callback SIGNED_IN)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
