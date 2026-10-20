@@ -189,6 +189,19 @@ export const LoginPage: React.FC = () => {
               Create an Orbit account
             </Link>
           </div>
+
+          {/* Corner Creator attribution */}
+          <div className="pt-1 text-center text-[11px] text-gray-500">
+            Crafted with care by{' '}
+            <a
+              href="https://github.com/vikki123224v"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-violet-400 hover:text-violet-300 transition"
+            >
+              Vighnesh (@vikki123224v)
+            </a>
+          </div>
         </div>
       </div>
     </div>

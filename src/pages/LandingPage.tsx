@@ -36,6 +36,14 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Center / Corner Creator Credit Badge */}
+          <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-xs">
+            <span className="text-gray-400">Crafted by</span>
+            <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400">
+              Vighnesh (vikki123224v)
+            </span>
+          </div>
+
           <div className="flex items-center gap-3">
             {user ? (
               <Link
@@ -148,8 +156,21 @@ export const LandingPage: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-8 text-center text-xs text-gray-500">
-        <p>&copy; {new Date().getFullYear()} Orbit — Find Your People. Built with Supabase & OpenStreetMap.</p>
+      <footer className="border-t border-white/5 py-8 text-center text-xs text-gray-500 safe-bottom">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p>&copy; {new Date().getFullYear()} Orbit — Find Your People. Built with Supabase & OpenStreetMap.</p>
+          <div className="flex items-center gap-1.5 text-gray-400">
+            <span>Created by</span>
+            <a
+              href="https://github.com/vikki123224v"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-violet-400 hover:text-violet-300 transition underline underline-offset-4"
+            >
+              Vighnesh (@vikki123224v)
+            </a>
+          </div>
+        </div>
       </footer>
     </div>
   )
