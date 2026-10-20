@@ -2,13 +2,40 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { Radio, Mail, Lock, AlertCircle, Loader2, ArrowRight } from 'lucide-react'
+import { GoogleIcon } from '../components/icons/GoogleIcon'
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const navigate = useNavigate()
+
+  const handleGoogleSignIn = async () => {
+    setErrorMsg(null)
+    if (!isSupabaseConfigured) {
+      setErrorMsg('Supabase API keys are not configured yet.')
+      return
+    }
+
+    setGoogleLoading(true)
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/app`,
+        },
+      })
+      if (error) {
+        setErrorMsg(error.message)
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Google sign-in failed.')
+    } finally {
+      setGoogleLoading(false)
+    }
+  }
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -108,7 +135,7 @@ export const LoginPage: React.FC = () => {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || googleLoading}
               className="w-full mt-2 py-3 px-4 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 text-white font-semibold text-sm shadow-lg shadow-violet-600/25 hover:shadow-violet-600/40 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
             >
               {loading ? (
@@ -125,7 +152,31 @@ export const LoginPage: React.FC = () => {
             </button>
           </form>
 
-          <div className="pt-4 border-t border-white/5 text-center text-xs text-gray-400">
+          {/* Social Auth Divider */}
+          <div className="relative flex items-center justify-center">
+            <div className="border-t border-white/10 w-full" />
+            <span className="bg-[#0e1424] px-3 text-[11px] uppercase tracking-wider text-gray-500">
+              Or continue with
+            </span>
+            <div className="border-t border-white/10 w-full" />
+          </div>
+
+          {/* Google Sign-in Button */}
+          <button
+            type="button"
+            disabled={loading || googleLoading}
+            onClick={handleGoogleSignIn}
+            className="w-full py-2.5 px-4 rounded-xl bg-[#131b2e] hover:bg-[#1a243e] border border-white/10 hover:border-violet-500/30 text-white font-medium text-sm transition flex items-center justify-center gap-3 shadow-md group disabled:opacity-50"
+          >
+            {googleLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin text-gray-300" />
+            ) : (
+              <GoogleIcon className="w-4 h-4 group-hover:scale-105 transition" />
+            )}
+            <span>Sign in with Google</span>
+          </button>
+
+          <div className="pt-2 border-t border-white/5 text-center text-xs text-gray-400">
             Don't have an account yet?{' '}
             <Link to="/signup" className="text-violet-400 hover:text-violet-300 font-semibold ml-1">
               Create an Orbit account
