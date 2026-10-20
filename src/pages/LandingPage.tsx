@@ -1,5 +1,6 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import {
   EyeOff,
   Radio,
@@ -10,6 +11,12 @@ import {
 } from 'lucide-react'
 
 export const LandingPage: React.FC = () => {
+  const { user, loading } = useAuth()
+
+  // If user is already authenticated, redirect straight to the main app dashboard
+  if (!loading && user) {
+    return <Navigate to="/app" replace />
+  }
   return (
     <div className="min-h-screen bg-[#090d16] text-gray-100 flex flex-col selection:bg-violet-600/30 selection:text-violet-300">
       {/* Top Header */}
@@ -30,19 +37,31 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link
-              to="/login"
-              className="text-sm font-medium text-gray-300 hover:text-white px-3.5 py-1.5 transition"
-            >
-              Sign In
-            </Link>
-            <Link
-              to="/signup"
-              className="text-sm font-medium bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white px-4 py-2 rounded-xl transition shadow-lg shadow-violet-500/25 flex items-center gap-1.5"
-            >
-              Get Started
-              <ChevronRight className="w-4 h-4" />
-            </Link>
+            {user ? (
+              <Link
+                to="/app"
+                className="text-sm font-semibold bg-gradient-to-r from-violet-600 to-cyan-500 text-white px-4 py-2 rounded-xl transition shadow-lg shadow-violet-500/25 flex items-center gap-1.5"
+              >
+                Go to App
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="text-sm font-medium text-gray-300 hover:text-white px-3.5 py-1.5 transition"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/signup"
+                  className="text-sm font-medium bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white px-4 py-2 rounded-xl transition shadow-lg shadow-violet-500/25 flex items-center gap-1.5"
+                >
+                  Get Started
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -67,19 +86,31 @@ export const LandingPage: React.FC = () => {
         </p>
 
         <div className="mt-10 flex flex-col sm:flex-row gap-4 items-center justify-center">
-          <Link
-            to="/signup"
-            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 text-white font-semibold text-base shadow-xl shadow-violet-600/25 hover:shadow-violet-600/40 hover:scale-[1.02] active:scale-[0.98] transition flex items-center justify-center gap-2"
-          >
-            Launch Orbit Map
-            <ChevronRight className="w-4 h-4" />
-          </Link>
-          <Link
-            to="/login"
-            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#141b2d] hover:bg-[#1a233a] border border-white/10 text-gray-200 font-medium text-base transition flex items-center justify-center"
-          >
-            Sign In with Email
-          </Link>
+          {user ? (
+            <Link
+              to="/app"
+              className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 text-white font-semibold text-base shadow-xl shadow-violet-600/25 hover:shadow-violet-600/40 hover:scale-[1.02] active:scale-[0.98] transition flex items-center justify-center gap-2"
+            >
+              Open Live Orbit Map
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          ) : (
+            <>
+              <Link
+                to="/signup"
+                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 text-white font-semibold text-base shadow-xl shadow-violet-600/25 hover:shadow-violet-600/40 hover:scale-[1.02] active:scale-[0.98] transition flex items-center justify-center gap-2"
+              >
+                Launch Orbit Map
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+              <Link
+                to="/login"
+                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#141b2d] hover:bg-[#1a233a] border border-white/10 text-gray-200 font-medium text-base transition flex items-center justify-center"
+              >
+                Sign In with Email
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Core Pillars Feature Grid */}

@@ -29,19 +29,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userObj: User) => {
     if (!isSupabaseConfigured) return
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', userId)
+        .eq('id', userObj.id)
         .single()
 
       if (!error && data) {
         setProfile(data as Profile)
       } else {
-        setProfile(null)
+        // If trigger has not executed or profile does not exist yet (e.g. Google OAuth sign-in)
+        const generatedHandle =
+          userObj.user_metadata?.username ||
+          userObj.email?.split('@')[0]?.replace(/[^a-zA-Z0-9_]/g, '_')?.slice(0, 20) ||
+          `user_${userObj.id.slice(0, 8)}`
+        const generatedName =
+          userObj.user_metadata?.full_name ||
+          userObj.user_metadata?.display_name ||
+          userObj.user_metadata?.name ||
+          userObj.email?.split('@')[0] ||
+          'Orbit Explorer'
+        const avatar = userObj.user_metadata?.avatar_url || userObj.user_metadata?.picture || null
+
+        const { data: insertedProfile } = await supabase
+          .from('profiles')
+          .upsert(
+            {
+              id: userObj.id,
+              username: generatedHandle.toLowerCase(),
+              display_name: generatedName,
+              avatar_url: avatar,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'id' }
+          )
+          .select()
+          .single()
+
+        if (insertedProfile) {
+          setProfile(insertedProfile as Profile)
+        }
       }
     } catch (err) {
       console.error('Failed to fetch user profile:', err)
@@ -50,8 +80,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const refreshProfile = async () => {
-    if (user?.id) {
-      await fetchProfile(user.id)
+    if (user) {
+      await fetchProfile(user)
     }
   }
 
@@ -66,7 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) {
-        fetchProfile(session.user.id)
+        fetchProfile(session.user)
       }
       setLoading(false)
     })
@@ -78,7 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) {
-        await fetchProfile(session.user.id)
+        await fetchProfile(session.user)
       } else {
         setProfile(null)
       }
