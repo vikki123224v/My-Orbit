@@ -40,7 +40,7 @@ export const LandingPage: React.FC = () => {
           <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-xs">
             <span className="text-gray-400">Crafted by</span>
             <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400">
-              Vighnesh (vikki123224v)
+              Vighneshwara (vikki123224v)
             </span>
           </div>
 
@@ -167,7 +167,7 @@ export const LandingPage: React.FC = () => {
               rel="noopener noreferrer"
               className="font-medium text-violet-400 hover:text-violet-300 transition underline underline-offset-4"
             >
-              Vighnesh (@vikki123224v)
+              Vighneshwara (@vikki123224v)
             </a>
           </div>
         </div>

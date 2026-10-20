@@ -113,7 +113,7 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 Crafted with ❤️ and precision by:
 
-**Vighnesh**
+**Vighneshwara**
 - GitHub: [@vikki123224v](https://github.com/vikki123224v)
 - Project: [My-Orbit](https://github.com/vikki123224v/My-Orbit)
 

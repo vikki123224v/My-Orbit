@@ -199,7 +199,7 @@ export const LoginPage: React.FC = () => {
               rel="noopener noreferrer"
               className="text-violet-400 hover:text-violet-300 transition"
             >
-              Vighnesh (@vikki123224v)
+              Vighneshwara (@vikki123224v)
             </a>
           </div>
         </div>
