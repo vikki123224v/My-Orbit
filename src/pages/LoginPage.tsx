@@ -80,16 +80,16 @@ export const LoginPage: React.FC = () => {
             <Radio className="w-6 h-6 text-white" />
           </div>
         </Link>
-        <h2 className="mt-4 text-2xl font-bold tracking-tight text-white">
+        <h2 className="mt-4 text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
           Sign in to Orbit
         </h2>
-        <p className="mt-1 text-sm text-gray-400">
+        <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
           Find your people with privacy-first location control
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
-        <div className="glass-panel py-8 px-6 sm:px-10 rounded-2xl border border-white/10 shadow-2xl space-y-6">
+        <div className="glass-panel py-8 px-6 sm:px-10 rounded-2xl shadow-2xl space-y-6">
           {errorMsg && (
             <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs sm:text-sm flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
@@ -99,25 +99,30 @@ export const LoginPage: React.FC = () => {
 
           <form onSubmit={handleSignIn} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-300 mb-1.5 uppercase tracking-wider">
+              <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-gray-500 absolute left-3.5 top-3.5" />
+                <Mail className="w-4 h-4 absolute left-3.5 top-3.5" style={{ color: 'var(--text-muted)' }} />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full pl-10 pr-4 py-2.5 bg-black/40 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition"
+                  style={{
+                    backgroundColor: 'var(--bg-input)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-input)',
+                  }}
                 />
               </div>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                <label className="block text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                   Password
                 </label>
                 <Link
@@ -128,14 +133,19 @@ export const LoginPage: React.FC = () => {
                 </Link>
               </div>
               <div className="relative">
-                <Lock className="w-4 h-4 text-gray-500 absolute left-3.5 top-3.5" />
+                <Lock className="w-4 h-4 absolute left-3.5 top-3.5" style={{ color: 'var(--text-muted)' }} />
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 bg-black/40 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition"
+                  style={{
+                    backgroundColor: 'var(--bg-input)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-input)',
+                  }}
                 />
               </div>
             </div>
@@ -161,11 +171,17 @@ export const LoginPage: React.FC = () => {
 
           {/* Social Auth Divider */}
           <div className="relative flex items-center justify-center">
-            <div className="border-t border-white/10 w-full" />
-            <span className="bg-[#0e1424] px-3 text-[11px] uppercase tracking-wider text-gray-500">
+            <div className="w-full" style={{ borderTop: '1px solid var(--border-color)' }} />
+            <span
+              className="px-3 text-[11px] uppercase tracking-wider rounded-md whitespace-nowrap"
+              style={{
+                backgroundColor: 'var(--bg-card-solid)',
+                color: 'var(--text-muted)',
+              }}
+            >
               Or continue with
             </span>
-            <div className="border-t border-white/10 w-full" />
+            <div className="w-full" style={{ borderTop: '1px solid var(--border-color)' }} />
           </div>
 
           {/* Google Sign-in Button */}
@@ -173,7 +189,12 @@ export const LoginPage: React.FC = () => {
             type="button"
             disabled={loading || googleLoading}
             onClick={handleGoogleSignIn}
-            className="w-full py-2.5 px-4 rounded-xl bg-[#131b2e] hover:bg-[#1a243e] border border-white/10 hover:border-violet-500/30 text-white font-medium text-sm transition flex items-center justify-center gap-3 shadow-md group disabled:opacity-50"
+            className="w-full py-2.5 px-4 rounded-xl border transition flex items-center justify-center gap-3 shadow-md group disabled:opacity-50 active:scale-[0.99]"
+            style={{
+              backgroundColor: 'var(--bg-card-solid)',
+              borderColor: 'var(--border-color)',
+              color: 'var(--text-primary)',
+            }}
           >
             {googleLoading ? (
               <Loader2 className="w-4 h-4 animate-spin text-gray-300" />
@@ -183,7 +204,7 @@ export const LoginPage: React.FC = () => {
             <span>Sign in with Google</span>
           </button>
 
-          <div className="pt-2 border-t border-white/5 text-center text-xs text-gray-400">
+          <div className="pt-2 border-t text-center text-xs" style={{ borderTopColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
             Don't have an account yet?{' '}
             <Link to="/signup" className="text-violet-400 hover:text-violet-300 font-semibold ml-1">
               Create an Orbit account
@@ -191,7 +212,7 @@ export const LoginPage: React.FC = () => {
           </div>
 
           {/* Corner Creator attribution */}
-          <div className="pt-1 text-center text-[11px] text-gray-500">
+          <div className="pt-1 text-center text-[11px]" style={{ color: 'var(--text-muted)' }}>
             Crafted with care by{' '}
             <a
               href="https://github.com/vikki123224v"

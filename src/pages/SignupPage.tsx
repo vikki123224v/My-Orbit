@@ -221,11 +221,17 @@ export const SignupPage: React.FC = () => {
 
           {/* Social Auth Divider */}
           <div className="relative flex items-center justify-center">
-            <div className="border-t border-white/10 w-full" />
-            <span className="bg-[#0e1424] px-3 text-[11px] uppercase tracking-wider text-gray-500">
+            <div className="w-full" style={{ borderTop: '1px solid var(--border-color)' }} />
+            <span
+              className="px-3 text-[11px] uppercase tracking-wider rounded-md whitespace-nowrap"
+              style={{
+                backgroundColor: 'var(--bg-card-solid)',
+                color: 'var(--text-muted)',
+              }}
+            >
               Or continue with
             </span>
-            <div className="border-t border-white/10 w-full" />
+            <div className="w-full" style={{ borderTop: '1px solid var(--border-color)' }} />
           </div>
 
           {/* Google Sign-in Button */}
@@ -233,7 +239,12 @@ export const SignupPage: React.FC = () => {
             type="button"
             disabled={loading || googleLoading}
             onClick={handleGoogleSignUp}
-            className="w-full py-2.5 px-4 rounded-xl bg-[#131b2e] hover:bg-[#1a243e] border border-white/10 hover:border-violet-500/30 text-white font-medium text-sm transition flex items-center justify-center gap-3 shadow-md group disabled:opacity-50"
+            className="w-full py-2.5 px-4 rounded-xl border transition flex items-center justify-center gap-3 shadow-md group disabled:opacity-50 active:scale-[0.99]"
+            style={{
+              backgroundColor: 'var(--bg-card-solid)',
+              borderColor: 'var(--border-color)',
+              color: 'var(--text-primary)',
+            }}
           >
             {googleLoading ? (
               <Loader2 className="w-4 h-4 animate-spin text-gray-300" />
@@ -243,7 +254,7 @@ export const SignupPage: React.FC = () => {
             <span>Sign up with Google</span>
           </button>
 
-          <div className="pt-2 border-t border-white/5 text-center text-xs text-gray-400">
+          <div className="pt-2 border-t text-center text-xs" style={{ borderTopColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
             Already have an Orbit account?{' '}
             <Link to="/login" className="text-violet-400 hover:text-violet-300 font-semibold ml-1">
               Sign In
