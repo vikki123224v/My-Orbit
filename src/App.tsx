@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider } from './context/AuthContext'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import { LocationProvider } from './context/LocationContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AppLayout } from './components/AppLayout'
 import { LandingPage } from './pages/LandingPage'
@@ -11,9 +12,10 @@ import { FriendsPage } from './pages/FriendsPage'
 import { PrivacyPage } from './pages/PrivacyPage'
 import { OrbitMapDashboard } from './components/OrbitMapDashboard'
 
-export function App() {
+function AuthenticatedApp() {
+  const { user } = useAuth()
   return (
-    <AuthProvider>
+    <LocationProvider userId={user?.id ?? null}>
       <BrowserRouter>
         <Routes>
           {/* Public Landing & Marketing */}
@@ -70,6 +72,14 @@ export function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+    </LocationProvider>
+  )
+}
+
+export function App() {
+  return (
+    <AuthProvider>
+      <AuthenticatedApp />
     </AuthProvider>
   )
 }

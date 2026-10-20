@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useLocationTracker } from '../hooks/useLocationTracker'
 import { privacyService } from '../services/privacyService'
 import type { FriendPermissionItem } from '../services/privacyService'
 import {
@@ -16,8 +17,8 @@ import {
 
 export const PrivacyPage: React.FC = () => {
   const { user, isConfigured } = useAuth()
+  const tracker = useLocationTracker()
 
-  const [sharingEnabled, setSharingEnabled] = useState(false)
   const [morphedPresence, setMorphedPresence] = useState(false)
   const [friendsPerms, setFriendsPerms] = useState<FriendPermissionItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -28,12 +29,10 @@ export const PrivacyPage: React.FC = () => {
     if (!user || !isConfigured) return
     setLoading(true)
     try {
-      const [sharing, morphed, perms] = await Promise.all([
-        privacyService.getSharingState(user.id),
+      const [morphed, perms] = await Promise.all([
         privacyService.getMorphedPresence(user.id),
         privacyService.getFriendPermissions(user.id),
       ])
-      setSharingEnabled(sharing)
       setMorphedPresence(morphed)
       setFriendsPerms(perms)
     } catch (err: any) {
@@ -48,23 +47,21 @@ export const PrivacyPage: React.FC = () => {
     loadSettings()
   }, [user, isConfigured])
 
-  // Master sharing toggle
+  // Master sharing toggle synced directly with persistent global tracker
   const handleToggleMasterSharing = async () => {
-    if (!user) return
-    const nextState = !sharingEnabled
-    setSharingEnabled(nextState)
     setStatusMessage(null)
-    try {
-      await privacyService.setSharingState(user.id, nextState)
+    if (!tracker.isTracking) {
+      tracker.startTracking()
       setStatusMessage({
         type: 'success',
-        text: nextState
-          ? 'Live location sharing activated for permitted friends.'
-          : 'Location sharing halted. Exact coordinates have been purged.',
+        text: 'Live location sharing activated. Sharing will stay active across pages.',
       })
-    } catch (err: any) {
-      setSharingEnabled(!nextState)
-      setStatusMessage({ type: 'error', text: err.message || 'Failed to update sharing state.' })
+    } else {
+      await tracker.stopTracking()
+      setStatusMessage({
+        type: 'success',
+        text: 'Location sharing halted. Exact coordinates have been purged.',
+      })
     }
   }
 
@@ -144,12 +141,12 @@ export const PrivacyPage: React.FC = () => {
           <div className="flex items-start gap-3.5">
             <div
               className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border transition ${
-                sharingEnabled
+                tracker.isTracking
                   ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400 shadow-lg shadow-emerald-500/20'
                   : 'bg-white/5 border-white/10 text-gray-400'
               }`}
             >
-              <Radio className={`w-6 h-6 ${sharingEnabled ? 'animate-pulse' : ''}`} />
+              <Radio className={`w-6 h-6 ${tracker.isTracking ? 'animate-pulse' : ''}`} />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -158,12 +155,12 @@ export const PrivacyPage: React.FC = () => {
                 </h3>
                 <span
                   className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    sharingEnabled
+                    tracker.isTracking
                       ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                       : 'bg-gray-800 text-gray-400 border border-gray-700'
                   }`}
                 >
-                  {sharingEnabled ? 'ACTIVE' : 'OFF (SECURE)'}
+                  {tracker.isTracking ? 'ACTIVE' : 'OFF (SECURE)'}
                 </span>
               </div>
               <p className="text-xs text-gray-400 mt-1 max-w-lg leading-relaxed">
@@ -177,12 +174,12 @@ export const PrivacyPage: React.FC = () => {
             onClick={handleToggleMasterSharing}
             type="button"
             className={`w-14 h-8 rounded-full transition p-1 cursor-pointer relative shrink-0 ${
-              sharingEnabled ? 'bg-violet-600' : 'bg-gray-700'
+              tracker.isTracking ? 'bg-violet-600' : 'bg-gray-700'
             }`}
           >
             <div
               className={`w-6 h-6 rounded-full bg-white transition transform ${
-                sharingEnabled ? 'translate-x-6' : 'translate-x-0'
+                tracker.isTracking ? 'translate-x-6' : 'translate-x-0'
               } shadow-md`}
             />
           </button>

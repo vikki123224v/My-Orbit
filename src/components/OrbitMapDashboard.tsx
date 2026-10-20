@@ -7,7 +7,6 @@ import {
   Circle,
   useMap,
 } from 'react-leaflet'
-import { useAuth } from '../context/AuthContext'
 import { useLocationTracker } from '../hooks/useLocationTracker'
 import { useAuthorizedLocations } from '../hooks/useAuthorizedLocations'
 import { createUserMarkerIcon } from '../components/MapMarkers'
@@ -41,8 +40,7 @@ function MapViewController({
 }
 
 export const OrbitMapDashboard: React.FC = () => {
-  const { user } = useAuth()
-  const tracker = useLocationTracker(user?.id ?? null)
+  const tracker = useLocationTracker()
   const { locations, loading, refreshLocations } = useAuthorizedLocations(tracker.coords)
 
   // Distance Range Filter: 1, 5, 10, 25, or 'all' (default is 5 km)
